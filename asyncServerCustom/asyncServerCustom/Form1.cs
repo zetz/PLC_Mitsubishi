@@ -145,29 +145,28 @@ namespace asyncServerCustom
                         //string tempread = (Encoding.ASCII.GetString(state.buffer, 0, bytesRead));
                         string tempread = BitConverter.ToString(state.buffer, 0, bytesRead);
                         tempread = tempread.Replace("-", "");
+                        var buf = new byte[bytesRead];
+                        Buffer.BlockCopy(state.buffer, 0, buf, 0, bytesRead);
 
-                        // device word write
-                        if (tempread == "500000FFFF03000E001000011400001E0C00A801001111")
-                        {
-                            byte[] toSend = new byte[]
-                            {
-                                0xD0, 0x00, 0x00, 0xFF, 0xFF, 0x03, 0x00, 0x02, 0x00, 0x00, 0x00
-                            };
+                        MCProtocol_t protocol = MCSerializer.Deserialize<MCProtocol_t>(buf);
 
-                            var socket = list.First();
-                            Send(socket, toSend);
-                        } 
-                        else if (tempread == "500000FFFF03000C001000010400001E0C00A80100")
-                        {
-                            // device word read
-                            byte[] toSend = new byte[]
-                            {
+                        byte[] toSend = null;
+                        if (protocol.DeviceWordWrite.Command == 0x0401) {
+                            // write
+                            toSend = new byte[] {
                                 0xD0, 0x00, 0x00, 0xFF, 0xFF, 0x03, 0x00, 0x04, 0x00, 0x00, 0x00,
                                 // data
                                 0x12, 0x00
                             };
+                        } else if (protocol.DeviceWordWrite.Command == 0x1401) {
+                            // read
+                            toSend = new byte[] {
+                                0xD0, 0x00, 0x00, 0xFF, 0xFF, 0x03, 0x00, 0x02, 0x00, 0x00, 0x00
+                            };
+                        }
 
-                            var socket = list.First();
+                        var socket = list.FirstOrDefault();
+                        if (socket != null && toSend != null) {
                             Send(socket, toSend);
                         }
 

@@ -130,6 +130,7 @@ namespace Mitsubishi_PLC_QnUCPU_In_Ethernet
             SendLen += (int)Marshal.SizeOf(send_protocol.DataLength);
             SendLen += (int)send_protocol.DataLength;
 
+            // @TODO : 왜 여기에 이런코드가 있지? MCSerializer 기능 사용할 것!!
             //C#엔 포인터가 없기때문에 아래처럼 해야됨
             send_buff = new byte[Marshal.SizeOf(send_protocol)];
             unsafe
@@ -143,6 +144,7 @@ namespace Mitsubishi_PLC_QnUCPU_In_Ethernet
             //프로토콜 Send
             try
             {
+                // @TODO : 여기 브레이크 포인트 걸어놓고 보면 버퍼 사이즈가 틀림.
                 client.Send(send_buff, SendLen, SocketFlags.None);
             }
             catch (ArgumentNullException ex)
